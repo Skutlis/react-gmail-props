@@ -5,12 +5,19 @@ import initialEmails from './data/emails'
 import './styles/App.css'
 import  Emails  from './components/Emails'
 import React from 'react'
+import Email from './components/Email'
+import Menu from './components/menu'
+import Header from './components/header'
+
+
 
 const getReadEmails = emails => emails.filter(email => !email.read)
 
 const getStarredEmails = emails => emails.filter(email => email.starred)
 
 function App() {
+  const [searchword, setSearchword] = useState("")
+  const [markedEmail, setMarkedEmail] = useState(0)
   const [emails, setEmails] = useState(initialEmails)
   const [hideRead, setHideRead] = useState(false)
   const [currentTab, setCurrentTab] = useState('inbox')
@@ -36,7 +43,24 @@ function App() {
     setEmails(updatedEmails)
   }
 
+  const markMail = (id) => {
+    setMarkedEmail(id)
+  }
+
+
+  const updateSearch = (search) => {
+    setSearchword(search.toLowerCase())
+  }
+
+  
+  
   let filteredEmails = emails
+ 
+  if (searchword != ""){
+    filteredEmails = filteredEmails.filter(email => email.title.toLowerCase().includes(searchword));
+  }
+
+ 
 
   if (hideRead) filteredEmails = getReadEmails(filteredEmails)
 
@@ -45,53 +69,27 @@ function App() {
 
   return (
     <div className="app">
-      <header className="header">
-        <div className="left-menu">
-          <svg className="menu-icon" focusable="false" viewBox="0 0 24 24">
-            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path>
-          </svg>
-
-          <img
-            src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/logo_gmail_lockup_default_1x_r2.png"
-            alt="gmail logo"
-          />
-        </div>
-
-        <div className="search">
-          <input className="search-bar" placeholder="Search mail" />
-        </div>
-      </header>
-      <nav className="left-menu">
-        <ul className="inbox-list">
-          <li
-            className={`item ${currentTab === 'inbox' ? 'active' : ''}`}
-            onClick={() => setCurrentTab('inbox')}
-          >
-            <span className="label">Inbox</span>
-            <span className="count">{unreadEmails.length}</span>
-          </li>
-          <li
-            className={`item ${currentTab === 'starred' ? 'active' : ''}`}
-            onClick={() => setCurrentTab('starred')}
-          >
-            <span className="label">Starred</span>
-            <span className="count">{starredEmails.length}</span>
-          </li>
-
-          <li className="item toggle">
-            <label htmlFor="hide-read">Hide read</label>
-            <input
-              id="hide-read"
-              type="checkbox"
-              checked={hideRead}
-              onChange={e => setHideRead(e.target.checked)}
-            />
-          </li>
-        </ul>
-      </nav>
+      <Header
+      updateSearch={updateSearch} />
+      <Menu setCurrentTab = {setCurrentTab}
+            currentTab = {currentTab}
+            unreadEmails={unreadEmails}
+            starredEmails={starredEmails}
+            hideRead={hideRead}
+            setHideRead={setHideRead} />
+      {
+        markedEmail == 0 ?
       <Emails emails = {filteredEmails} 
       toggleStar = {toggleStar}
-      toggleRead = {toggleRead} />
+      toggleRead = {toggleRead}
+      setMarkedEmail = {markMail} />
+      :
+      <Email email = {initialEmails.at(markedEmail-1)}
+       
+      setMarkedEmail = {markMail}
+      />
+      }
+
 
     </div>
   )
